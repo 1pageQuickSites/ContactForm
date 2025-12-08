@@ -250,7 +250,7 @@ app.post("/addLead", async (req, res) => {
     {
       method: "POST",
       headers: {
-        "Authorization": "Zoho-oauthtoken YOUR_TOKEN_HERE",
+        "Authorization": "Zoho-oauthtoken 7161249000000607001",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ data: [data] })
@@ -268,7 +268,7 @@ import fetch from 'node-fetch';
 import fs from 'fs';
 
 // ====== CONFIG ======
-const CLIENT_ID = 'YOUR_CLIENT_ID';       // Replace with your Client ID
+const CLIENT_ID = '7161249000000607001';       // Replace with your Client ID
 const CLIENT_SECRET = 'YOUR_CLIENT_SECRET'; // Replace with your Client Secret
 const REDIRECT_URI = 'https://1pagequicksites.github.io/ContactForm/';   // Must match your registered redirect
 let REFRESH_TOKEN = 'https://1pagequicksites.github.io/ContactForm/';   // We'll store refresh token here
