@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Use the full pin URL if you have it; short pin.it links usually redirect fine -->
+  <meta meta charset="utf-8" />
+  <title>Contact form</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join Me Now</title>
+
+<style>
+body {
+  margin: 0;
+  background: #ffffff;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  color: #000;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Background image */
+.parent-element::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("");
+  background-size: cover;
+  background-position: center;
+  opacity: 0.08;
+  z-index: -1;
+}
+
+/* Main Content Box */
+.background {
+  background: rgba(229, 223, 0, 0.45);
+  padding: 25px;
+  margin: 40px auto;
+  border-radius: 20px;
+  border: 3px solid #000;
+  position: relative;
+  max-width: 420px;
+}
+
+/* Heading */
+h1 {
+  font-size: 32px;
+  color: hsl(195, 100%, 60%);
+  font-weight: bold;
+  -webkit-text-stroke: 1px black;
+  margin-bottom: 15px;
+}
+
+/* Input Fields */
+input {
+  width: 90%;
+  padding: 12px;
+  margin: 10px 0;
+  font-size: 18px;
+  border-radius: 8px;
+  border: 2px solid #000;
+}
+
+/* Button */
+.btn {
+  display: block;
+  width: 95%;
+  margin: 15px auto;
+  padding: 12px;
+  background: #000;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 10px;
+  font-size: 20px;
+  border: 3px solid #000;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #00E5FF;
+  color: #000;
+}
+
+/* Success Message */
+#successMsg {
+  color: green;
+  font-weight: bold;
+  margin-top: 15px;
+  display: none;
+}
+  </style>
+
+  <!-- Use the full pin URL if you have it; short pin.it links usually redirect fine -->
+  <!-- Pinterest embed JS (loads the pin inside the <a>) -->
+  <!-- Pinterest embed JS (loads the pin inside the <a>) -->
+  <img width="50%" max-width=65% src="https://1pagequicksites.github.io/images/IX_cr3@mP!4_20251115_094422_0001.png" alt="Logo" class="logo half"></img>
+  
+  <h1>Join Us Now</h1>
+
+  <form id="contact" method="POST" action="/submit-contact" >
+    <input type="text" id="name" placeholder="Full Name" required>
+    <input type="email" id="email" placeholder="Email Address" required>
+    <input type="tel" id="phone" placeholder="Phone Number" required>
+
+    <button type="submit" class="btn">Join Now</button>
+  </form>
+  <div id="successMsg">✅ You're signed up!</div>
+
+</div>
+</html>
+</body>
+<script>
+document.getElementById("signupForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const name  = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const phone = document.getElementById("phone").value;
+
+  // Save locally (for now)
+  const users = JSON.parse(localStorage.getItem("signups")) || [];
+  users.push({ name, email, phone, time: new Date().toISOString() });
+  localStorage.setItem("signups", JSON.stringify(users));
+
+  // Reset form
+  this.reset();
+
+  // Show success message
+  document.getElementById("successMsg").style.display = "block";
+});
+</script>
+  
+<script>// server.js
+require('dotenv').config();
+const express = require('express');
+const nodemailer = require('nodemailer');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const xss = require('xss-clean');
+
+const app = express();
+app.use(helmet());
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(xss());
+
+// basic rate limiter
+const limiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // max requests per IP per minute
+});
+app.use(limiter);
+
+// simple validation helper
+function validateInput(name, email, phone) {
+  if (!name || !email || !phone) return false;
+  // email simple regex (not exhaustive)
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^[0-9+\-\s().]{6,20}$/;
+  return emailRegex.test(email) && phoneRegex.test(phone);
+}
+
+// create transporter using env variables
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.Zoho.com',
+  port: Number(process.env.SMTP_PORT || 465),
+  secure: process.env.SMTP_SECURE === 'false' ? false : true, // true for 465
+  auth: {
+    user: process.env.SMTP_USER, // your SMTP username
+    pass: process.env.SMTP_PASS, // your SMTP password (app password for Gmail)
+  },
+});
+// health 
+app.get('/health', (req, res) => res.send('OK'));
+
+// POST endpoint to receive form and forward email
+app.post('/submit-contact', async (req, res) => {
+  try {
+    const { name, email, phone } = req.body;
+
+    if (!validateInput(name, email, phone)) {
+      return res.status(400).json({ success: false, message: 'Invalid input' });
+    }
+
+    const mailOptions = {
+      from: `"Website Contact" <${process.env.SMTP_USER}>`,
+      to: process.env.TO_EMAIL || 'iworkremote2@gmail.com',
+      subject: `New contact: ${name}`,
+      text: `You received a new contact submission:\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\n\n--`,
+      html: `<h3>New contact submission</h3>
+             <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+             <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+             <p><strong>Phone:</strong> ${escapeHtml(phone)}</p>`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    return res.json({ success: true, message: 'Sent' });
+  } catch (err) {
+    console.error('Email send error:', err);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// minimal HTML-escaping
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
+</script>
+
+</script>
+<script>
+document.getElementById("contactForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const formData = new FormData(e.target);
+
+  // YOUR GOOGLE SCRIPT URL
+  const scriptURL = "https://crm.zoho.com/crm/org908317215/tab/Accounts/7161249000000607001";
+
+  const resp = await fetch(scriptURL, {
+    method: "POST",
+    body: formData,
+  });
+
+  alert("Message saved to Google Sheets!");
+});
+</script>
+<script>
+import express from "express";
+import fetch from "node-fetch";
+
+const app = express();
+app.use(express.json());
+
+app.post("/addLead", async (req, res) => {
+  const data = req.body;
+
+  // Example: Insert into Leads module (POST)
+  const zohoResponse = await fetch(
+    "https://www.zohoapis.com/crm/v8/Leads",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": "Zoho-oauthtoken YOUR_TOKEN_HERE",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ data: [data] })
+    }
+  );
+
+  const result = await zohoResponse.json();
+  res.json(result);
+});
+
+app.listen(3000, () => console.log("Server running on port 3000"));
+</script>
+<script>// zoho_oauth.js
+import fetch from 'node-fetch';
+import fs from 'fs';
+
+// ====== CONFIG ======
+const CLIENT_ID = 'YOUR_CLIENT_ID';       // Replace with your Client ID
+const CLIENT_SECRET = 'YOUR_CLIENT_SECRET'; // Replace with your Client Secret
+const REDIRECT_URI = 'YOUR_REDIRECT_URI';   // Must match your registered redirect
+let REFRESH_TOKEN = '';                     // We'll store refresh token here
+let ACCESS_TOKEN = '';                      // Access token will be stored here
+
+// ====== Step 1: Exchange Auth Code for Tokens ======
+async function getTokensFromAuthCode(authCode) {
+  const params = new URLSearchParams({
+    code: authCode,
+    client_id: CLIENT_ID,
+    client_secret: CLIENT_SECRET,
+    redirect_uri: REDIRECT_URI,
+    grant_type: 'authorization_code'
+  });
+
+  const res = await fetch('https://accounts.zoho.com/oauth/v2/token', {
+    method: 'POST',
+    body: params
+  });
+  
+  const data = await res.json();
+  if (data.access_token && data.refresh_token) {
+    ACCESS_TOKEN = data.access_token;
+    REFRESH_TOKEN = data.refresh_token;
+    fs.writeFileSync('zoho_tokens.json', JSON.stringify(data, null, 2));
+    console.log('Tokens saved to zoho_tokens.json');
+  } else {
+    console.error('Error fetching tokens:', data);
+  }
+}
+
+// ====== Step 2: Refresh Access Token ======
+async function refreshAccessToken() {
+  if (!REFRESH_TOKEN) {
+    console.error('No refresh token available.');
+    return;
+  }
+
+  const params = new URLSearchParams({
+    refresh_token: REFRESH_TOKEN,
+    client_id: CLIENT_ID,
+    client_secret: CLIENT_SECRET,
+    grant_type: 'refresh_token'
+  });
+
+  const res = await fetch('https://accounts.zoho.com/oauth/v2/token', {
+    method: 'POST',
+    body: params
+  });
+
+  const data = await res.json();
+  if (data.access_token) {
+    ACCESS_TOKEN = data.access_token;
+    console.log('Access token refreshed:', ACCESS_TOKEN);
+  } else {
+    console.error('Error refreshing token:', data);
+  }
+}
+
+// ====== Step 3: Sample API Call ======
+async function getLeads() {
+  if (!ACCESS_TOKEN) await refreshAccessToken();
+
+  const res = await fetch('https://www.zohoapis.com/crm/v2/Leads', {
+    headers: {
+      'Authorization': `Zoho-oauthtoken ${ACCESS_TOKEN}`
+    }
+  });
+
+  const data = await res.json();
+  console.log('Leads:', data);
+}
+
+// ====== USAGE ======
+// 1️⃣ First time, get tokens with your authorization code:
+// getTokensFromAuthCode('YOUR_AUTH_CODE');
+
+// 2️⃣ After that, just refresh token & make API call:
+refreshAccessToken().then(() => getLeads());
+</script>
