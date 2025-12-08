@@ -224,7 +224,7 @@ document.getElementById("contactForm").addEventListener("submit", async function
   const formData = new FormData(e.target);
 
   // YOUR GOOGLE SCRIPT URL
-  const scriptURL = "https://1pagequicksites.github.io/ContactForm/";
+  const scriptURL = "https://docs.google.com/spreadsheets/d/12OyAS-2IRKgsukGRsJNgEOBDeT74JT2PbSk9xHPrC0w/edit?usp=drivesdk";
 
   const resp = await fetch(scriptURL, {
     method: "POST",
@@ -271,8 +271,8 @@ import fs from 'fs';
 const CLIENT_ID = 'YOUR_CLIENT_ID';       // Replace with your Client ID
 const CLIENT_SECRET = 'YOUR_CLIENT_SECRET'; // Replace with your Client Secret
 const REDIRECT_URI = 'https://1pagequicksites.github.io/ContactForm/';   // Must match your registered redirect
-let REFRESH_TOKEN = 'https://1pagequicksites.github.io/ContactForm/';                     // We'll store refresh token here
-let ACCESS_TOKEN = '';                      // Access token will be stored here
+let REFRESH_TOKEN = 'https://1pagequicksites.github.io/ContactForm/';   // We'll store refresh token here
+let ACCESS_TOKEN = ''; // Access token will be stored here
 
 // ====== Step 1: Exchange Auth Code for Tokens ======
 async function getTokensFromAuthCode(authCode) {
