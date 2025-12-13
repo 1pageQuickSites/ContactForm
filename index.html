@@ -98,13 +98,60 @@ input {
   
   <h1>Join Us Now</h1>
 
-  <form id="contact" method="POST" action="/submit-contact" >
-    <input type="text" id="name" placeholder="Full Name" required>
-    <input type="email" id="email" placeholder="Email Address" required>
-    <input type="tel" id="phone" placeholder="Phone Number" required>
-
-    <button type="submit" class="btn">Join Now</button>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Contact → Create Profile</title>
+</head>
+<body>
+  <h2>Create Account</h2>
+  <form id="contactForm">
+    <input name="govName" id="govName" placeholder="Government Name" required /><br>
+    <input name="profileName" id="profileName" placeholder="Profile Name" required /><br>
+    <input name="whatsapp" id="whatsapp" placeholder="WhatsApp Number" required /><br>
+    <input name="email" id="email" type="email" placeholder="Email" required /><br>
+    <button type="submit">Create Account</button>
   </form>
+
+  <script>
+    // put your deployed Apps Script web app URL here
+    const SCRIPT_URL = 'PASTE_YOUR_WEBAPP_URL_HERE';
+
+    document.getElementById('contactForm').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const payload = {
+        action: 'create_user',
+        govName: document.getElementById('govName').value.trim(),
+        profileName: document.getElementById('profileName').value.trim(),
+        whatsapp: document.getElementById('whatsapp').value.trim(),
+        email: document.getElementById('email').value.trim()
+      };
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const j = await res.json();
+        if (j.success) {
+          alert('Account created. Check your email for the password and the input form link.');
+          // optionally clear form
+          document.getElementById('contactForm').reset();
+        } else {
+          alert('Error: ' + j.message);
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
+    });
+  </script>
+</body>
+</html>
+
+  
   <div id="successMsg">✅ You're signed up!</div>
 
 </div>
